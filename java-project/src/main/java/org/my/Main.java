@@ -28,14 +28,11 @@ public class Main {
     }
 
 
-    public static void main(String[] args) throws IOException, CsvValidationException {
-        Path inputFilePAth =
-                Path.of(Main.class.getClassLoader().getResource("Popular_Baby_Names_NYC.csv").getPath());
-
+    public static void main(String[] args) {
         Map<Ethnicity, List<MostPopularBabyName>> mostPopularNamesMap = new HashMap<>();
 
-        Set<String> lastYears = Set.of("2017", "2018", "2019");
-        try (Reader reader = Files.newBufferedReader((inputFilePAth) )) {
+        Set<String> lastYears = Set.of("2015", "2016", "2017", "2018", "2019");
+        try (Reader reader = Files.newBufferedReader(Path.of("Popular_Baby_Names_NYC.csv"))) {
             try (CSVReader csvReader = new CSVReader(reader)) {
                 String[] line;
                 while ((line = csvReader.readNext()) != null) {
@@ -50,10 +47,29 @@ public class Main {
                     }
                 }
             }
+            catch(CsvValidationException e){
+                System.out.println("Couldn't parse lines of CSV file");
+            }
+        }
+        catch(IOException e){
+            System.out.println("Couldn't open CSV file");
         }
 
-        for (Ethnicity ethnicity : mostPopularNamesMap.keySet()) {
-            System.out.println("Ethnicity " + ethnicity + " : " + mostPopularNamesMap.get(ethnicity));
+        for (Map.Entry<Ethnicity, List<MostPopularBabyName>> entry : mostPopularNamesMap.entrySet()) {
+            System.out.println("\nChecking repeated names for ethnicity: " + entry.getKey());
+            var yearsPerNameMap = new HashMap<String, List<Integer>>();
+            for (var mostPopularName : entry.getValue()) {
+                yearsPerNameMap
+                        .computeIfAbsent(mostPopularName.name, (k) -> new ArrayList<>())
+                        .add(mostPopularName.year);
+            }
+            for (Map.Entry<String, List<Integer>> nameEntry : yearsPerNameMap.entrySet()) {
+                var name = nameEntry.getKey();
+                var years = nameEntry.getValue();
+                if (years.size() > 1) {
+                    System.out.println("The name " + name + " was the most common in more than one year. Years: " + years);
+                }
+            }
         }
     }
 }

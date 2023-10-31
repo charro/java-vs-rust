@@ -9,3 +9,7 @@ edition = "2021"
 csv = "1.3.0"
 strum = "0.25"
 strum_macros = "0.25"
+
+# Remove symbols to reduce binary size. Resulting file won't contain debugging info
+[profile.release]
+strip = true
