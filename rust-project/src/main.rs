@@ -3,8 +3,8 @@ use std::str::FromStr;
 use csv::StringRecord;
 use strum_macros::EnumString;
 
-#[derive(Debug)]                // Required automatically format the value of this enum with println
-#[derive(EnumString)]           // Required to construct this enum using strings (serialize)
+#[derive(Debug)]                // Required to automatically format the value of this enum with println
+#[derive(EnumString)]           // Required to construct (serialize) this enum using strings
 #[derive(Copy, Clone)]          // Required to copy the enum value instead of moving it
 #[derive(Eq, Hash, PartialEq)]  // Required to use the HashMap::entry() API with this enum
 enum Ethnicity {
@@ -18,7 +18,7 @@ enum Ethnicity {
     WhiteNonHispanic
 }
 
-#[derive(Debug)]                // Required automatically format the value of this struct with println
+#[derive(Debug)]                // Required to automatically format the value of this struct with println
 struct MostPopularBabyName {
     name: String,
     ethnicity: Ethnicity,
@@ -27,11 +27,12 @@ struct MostPopularBabyName {
 
 impl MostPopularBabyName {
     pub fn from_csv_line(line: &StringRecord) -> Self {
-        let name = line[3].to_owned();
-        let ethnicity_str = line[2].to_owned();
-        let ethnicity = Ethnicity::from_str(ethnicity_str.as_str()).unwrap();
-        let year = line[0].to_owned().parse::<u16>().unwrap();
+        let name = &line[3];
+        let ethnicity_str = &line[2];
+        let ethnicity = Ethnicity::from_str(ethnicity_str).expect("Wrong ethnicity");
+        let year = line[0].parse::<u16>().expect("Year is not a correct u16 number");
 
+        let name = String::from(name);
         return MostPopularBabyName{name, ethnicity, year};
     }
 }
@@ -55,7 +56,7 @@ fn main() {
         }
     }
 
-    for (ethnicity, &ref most_popular_names_list) in most_popular_names_map.iter() {
+    for (ethnicity, most_popular_names_list) in most_popular_names_map.iter() {
         println!("\nChecking repeated names for ethnicity {:?}: ", ethnicity);
         let mut years_per_name_map: HashMap<&String, Vec<&u16>> = HashMap::new();
         for most_popular_name in most_popular_names_list {
