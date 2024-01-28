@@ -38,22 +38,30 @@ impl MostPopularBabyName {
 }
 
 fn main() {
-    let mut most_popular_names_map: HashMap<Ethnicity, Vec<MostPopularBabyName>> = HashMap::new();
 
     let last_years = HashSet::from(["2015", "2016", "2017", "2018", "2019"]);
     let reader = csv::Reader::from_path("Popular_Baby_Names_NYC.csv");
-    for line in reader.expect("Couldn't open CSV file").records() {
-        let line = line.expect("Couldn't parse lines of CSV file");
-        let gender = &line[1];
-        let rank = &line[5];
-        let year = &line[0];
-        if gender == "FEMALE" && rank == "1" && last_years.contains(year) {
-            let most_popular_name = MostPopularBabyName::from_csv_line(&line);
-            most_popular_names_map
-                .entry(most_popular_name.ethnicity)
-                .or_default()
-                .push(most_popular_name);
-        }
+
+    let most_popular_names_list : Vec<MostPopularBabyName> =
+        reader.expect("Couldn't open CSV file")
+            .records()
+            .map(|line| line.expect("Couldn't parse lines of CSV file"))
+            .filter(|record| {
+                let gender = &record[1];
+                let rank = &record[5];
+                let year = &record[0];
+
+                gender == "FEMALE" && rank == "1" && last_years.contains(year)
+            })
+            .map(|record| MostPopularBabyName::from_csv_line(&record))
+            .collect();
+
+    let mut most_popular_names_map: HashMap<Ethnicity, Vec<MostPopularBabyName>> = HashMap::new();
+    for most_popular_name in most_popular_names_list {
+        most_popular_names_map
+            .entry(most_popular_name.ethnicity)
+            .or_default()
+            .push(most_popular_name);
     }
 
     for (ethnicity, most_popular_names_list) in most_popular_names_map.iter() {
@@ -72,4 +80,6 @@ fn main() {
             }
         }
     }
+
 }
+
