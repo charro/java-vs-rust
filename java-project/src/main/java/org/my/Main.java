@@ -42,7 +42,7 @@ public class Main {
                     if(gender.equals("FEMALE") && rank.equals("1") && lastYears.contains(year)){
                         var mostPopularName = MostPopularBabyName.fromCsvLine(line);
                         mostPopularNamesMap
-                                .computeIfAbsent(mostPopularName.ethnicity, (k) -> new ArrayList<>())
+                                .computeIfAbsent(mostPopularName.ethnicity, k -> new ArrayList<>())
                                 .add(mostPopularName);
                     }
                 }
